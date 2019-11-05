@@ -15,9 +15,16 @@ Gotic package
 Provides a proper interface to execute shell command lines
 */
 
+// BuildCommand builds up a exec.Cmd
+var BuildCommand = buildCommand
+
+func buildCommand(command string) (cmd *exec.Cmd) {
+	return exec.Command("bash", "-c", command)
+}
+
 // ExecBashPipedCommand executes a simple command or a piped bash command
 func ExecBashPipedCommand(command string, showOutput bool) (string, error) {
-	cmd := exec.Command("bash", "-c", command)
+	cmd := BuildCommand(command)
 
 	out, err := cmd.CombinedOutput()
 
@@ -42,7 +49,7 @@ func ExecBashPipedCommand(command string, showOutput bool) (string, error) {
 
 // ExecBashPipedCommandIgnoreExitCode executes a simple command or a piped bash command
 func ExecBashPipedCommandIgnoreExitCode(command string, showOutput bool) (string, error) {
-	cmd := exec.Command("bash", "-c", command)
+	cmd := BuildCommand(command)
 
 	out, err := cmd.CombinedOutput()
 
@@ -66,7 +73,7 @@ func ExecBashPipedCommandIgnoreExitCode(command string, showOutput bool) (string
 
 // ExecShellScript executes a shell script file
 func ExecShellScript(shFilePath string, showOutput bool) (string, string) {
-	cmd := exec.Command("bash", shFilePath)
+	cmd := BuildCommand(shFilePath)
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
