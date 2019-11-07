@@ -1,6 +1,7 @@
 package gotic
 
 import (
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -11,6 +12,7 @@ type MockedExecBashPipedCommand struct {
 }
 
 func TestExecBashPipedCommand(t *testing.T) {
+	logFatal = log.Print
 	output, err := ExecBashPipedCommand("echo Arthur", true)
 
 	if err != nil {
@@ -36,5 +38,4 @@ func TestExecBashPipedCommandIgnoreExitCode(t *testing.T) {
 
 func TestPrompt(t *testing.T) {
 	Prompt("question", "ls", false)
-
 }

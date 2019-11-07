@@ -16,7 +16,10 @@ Provides a proper interface to execute shell command lines
 */
 
 // BuildCommand builds up a exec.Cmd
-var BuildCommand = buildCommand
+var (
+	BuildCommand = buildCommand
+	logFatal     = log.Fatal
+)
 
 func buildCommand(command string) (cmd *exec.Cmd) {
 	return exec.Command("bash", "-c", command)
@@ -41,7 +44,7 @@ func ExecBashPipedCommand(command string, showOutput bool) (string, error) {
 
 	if err != nil {
 		s := fmt.Sprintf("ExecBashPipedCommand failed with %s", err)
-		log.Fatalf(s)
+		logFatal(s)
 	}
 
 	return string(out), err
