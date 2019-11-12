@@ -3,6 +3,7 @@ package gotic
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -12,14 +13,33 @@ import (
 /*
 Gotic package
 
-Provides a proper interface to execute shell command lines
+Provides a proper interface to execute shell command lines.
+
+License: MIT
 */
+
+// the dependencies below are declared as package vars to enable dummies in unit tests
+// BuildCommand builds up a exec.Command.CombinedOutput
+var (
+	BuildCommand = buildCommand
+	logFatal     = log.Fatal
+	ReadPrompt   = readPrompt
+)
+
+func readPrompt(stdin io.Reader) (text string) {
+	reader := bufio.NewReader(stdin)
+	text, _ = reader.ReadString('\n')
+	return text
+}
+
+func buildCommand(command string) ([]byte, error) {
+	cmd := exec.Command("bash", "-c", command)
+	return cmd.CombinedOutput()
+}
 
 // ExecBashPipedCommand executes a simple command or a piped bash command
 func ExecBashPipedCommand(command string, showOutput bool) (string, error) {
-	cmd := exec.Command("bash", "-c", command)
-
-	out, err := cmd.CombinedOutput()
+	out, err := BuildCommand(command)
 
 	count := strings.Count(string(out), "\n")
 
@@ -34,7 +54,7 @@ func ExecBashPipedCommand(command string, showOutput bool) (string, error) {
 
 	if err != nil {
 		s := fmt.Sprintf("ExecBashPipedCommand failed with %s", err)
-		log.Fatalf(s)
+		logFatal(s)
 	}
 
 	return string(out), err
@@ -42,9 +62,7 @@ func ExecBashPipedCommand(command string, showOutput bool) (string, error) {
 
 // ExecBashPipedCommandIgnoreExitCode executes a simple command or a piped bash command
 func ExecBashPipedCommandIgnoreExitCode(command string, showOutput bool) (string, error) {
-	cmd := exec.Command("bash", "-c", command)
-
-	out, err := cmd.CombinedOutput()
+	out, err := BuildCommand(command)
 
 	count := strings.Count(string(out), "\n")
 
@@ -66,11 +84,10 @@ func ExecBashPipedCommandIgnoreExitCode(command string, showOutput bool) (string
 
 // ExecShellScript executes a shell script file
 func ExecShellScript(shFilePath string, showOutput bool) (string, string) {
-	cmd := exec.Command("bash", shFilePath)
+	out, err := BuildCommand(shFilePath)
 
-	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Fatalf("ExecShellScript failed with %s\n", err)
+		logFatal("ExecShellScript failed with %s\n", err)
 	}
 
 	if out != nil {
@@ -81,16 +98,18 @@ func ExecShellScript(shFilePath string, showOutput bool) (string, string) {
 }
 
 // Prompt asks to execute a commands
-func Prompt(question, command string, showOutput bool) {
+func Prompt(question, command string, showOutput bool) bool {
 	fmt.Printf("==> %s '%s'? (y/n)\n", question, command)
-	reader := bufio.NewReader(os.Stdin)
-	text, _ := reader.ReadString('\n')
+	text := ReadPrompt(os.Stdin)
 
+	fmt.Println(text)
 	// convert CRLF to LF
 	text = strings.Replace(text, "\n", "", -1)
 
 	if strings.Compare("Y", text) == 0 || strings.Compare("y", text) == 0 {
 		_, _ = ExecBashPipedCommand(command, showOutput)
 		log.Printf("Command '%s' finished\n", command)
+		return true
 	}
+	return false
 }
