@@ -1,5 +1,9 @@
 # Gotic
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/concretesolutions/gotic)](https://goreportcard.com/report/github.com/concretesolutions/gotic)
+
+![Gotic](images/Gotic_01.png)
+
 This package's original version was written by Kleber Toyota (https://github.com/klebertiko). Thank you for your hard work, Toyota.
 
 Gotic provides wrapper functions that runs shell commands.
